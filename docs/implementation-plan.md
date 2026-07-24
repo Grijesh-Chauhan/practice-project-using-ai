@@ -16,11 +16,11 @@ Establish repository structure, tooling, Git strategy, Cursor rules, and plannin
 - [x] `.gitignore` (Python, Node, SQLite, env, IDE, OS)
 - [x] `.cursor/rules/` (7 rule files)
 - [x] Complete `/docs` planning corpus
-- [ ] `.pre-commit-config.yaml`
-- [ ] `scripts/bootstrap.sh`
-- [ ] `artifacts/tool-workflow.md` (stub)
-- [ ] `artifacts/prompt-history/.gitkeep`
-- [ ] README outline (root)
+- [ ] `.pre-commit-config.yaml` *(create at start of Phase 3)*
+- [x] `scripts/bootstrap.sh` (stub — finalize after scaffolds)
+- [x] `artifacts/tool-workflow.md` (stub)
+- [x] `artifacts/prompt-history/.gitkeep`
+- [x] README outline (root)
 
 ### Dependencies
 None — first phase.
@@ -64,8 +64,9 @@ Translate assessment requirements into structured, testable specifications.
 ### Deliverables
 - [x] `docs/requirements-analysis.md`
 - [x] `docs/acceptance-criteria.md`
-- [ ] Resolved open questions (Q1–Q4 in requirements-analysis)
-- [ ] Traceability matrix (FR → AC)
+- [x] Resolved open questions (Q1–Q4 locked in requirements-analysis)
+- [x] Traceability matrix (FR → AC in acceptance-criteria)
+- [x] Design review gate: `docs/design-review-gate.md`
 
 ### Dependencies
 Phase 0 complete.
@@ -170,7 +171,7 @@ Phase 2 complete.
 
 ### Acceptance Criteria
 - All api-contract endpoints work via curl/httpx
-- Invalid status transitions return 409
+- Invalid status transitions return **409**
 - Data persists in SQLite after restart
 - Seed script populates users and sample tickets
 
@@ -350,7 +351,7 @@ Create .github/workflows/ci.yml running pytest and npm test on PR.
 
 ### Validation Checklist
 - [ ] 5 valid transitions pass
-- [ ] 20 invalid transitions fail with 4xx
+- [ ] 20 invalid transitions fail with **409**
 - [ ] Terminal states reject all transitions
 - [ ] Export only returns own tickets
 - [ ] CI workflow file valid

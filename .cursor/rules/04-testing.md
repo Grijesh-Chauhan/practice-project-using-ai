@@ -1,7 +1,7 @@
 # Testing Standards
 
 ## Backend (Mandatory)
-- **Integration tests** for status state machine: all valid transitions succeed; invalid transitions return 4xx.
+- **Integration tests** for status state machine: all valid transitions succeed; invalid transitions return **409**.
 - **API tests** for CRUD, comments, search, CSV export endpoint.
 - Use test DB (in-memory SQLite or temp file). Reset between tests.
 

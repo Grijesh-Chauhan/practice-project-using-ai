@@ -26,7 +26,7 @@ Concise, production-ready standards for the Support Ticket Management monorepo.
 | Routes | Thin; delegate to services |
 | Prefix | `/api/v1` |
 | Responses | Pydantic `response_model` on all endpoints |
-| Status codes | 201 create, 200 read/update, 404 not found, 422 validation |
+| Status codes | 201 create; 200 read/update; 404 not found; 422 validation; **409** invalid status; **400** bad `X-User-Id` |
 | Dependencies | `Depends()` in `api/deps.py` |
 | Routers | One file per resource in `endpoints/` |
 | Exception handlers | Map domain exceptions in `main.py` |

@@ -137,10 +137,11 @@ Full detail: [security.md](./security.md)
 
 ## Next Steps
 
-1. Review [implementation-plan.md](./implementation-plan.md) — Phase 0 checklist
-2. Run bootstrap script (when created)
-3. Begin Phase 3 backend with `@docs/api-contract.md` context
-4. Export Cursor sessions to `/artifacts/prompt-history/` as you go
+1. Read [design-review-gate.md](./design-review-gate.md) — confirm Definition of Ready
+2. Review [implementation-plan.md](./implementation-plan.md) — begin Phase 3
+3. Create `.pre-commit-config.yaml` with backend scaffold
+4. Implement against `@docs/api-contract.md` as source of truth
+5. Export Cursor sessions to `/artifacts/prompt-history/` as you go
 
 ---
 

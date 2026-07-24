@@ -91,13 +91,16 @@ def update_status(svc: TicketService = Depends(get_ticket_service), ...): ...
 Enforced exclusively in `TicketService.transition_status(ticket_id, new_status, actor_id)`:
 
 1. Load ticket (404 if missing)
-2. Validate `current_status → new_status` against allowed map
+2. Validate `current_status → new_status` against allowed map (same-status = invalid)
 3. Persist new status and `updated_at`
-4. Return updated ticket or raise `InvalidStatusTransition`
+4. Return updated ticket or raise `InvalidStatusTransition` → HTTP **409**
 
 ## 7. API Versioning
 
-**Decision:** Prefix `/api/v1/` for forward compatibility. Assessment can use `/api/` if simpler — document final choice in `api-contract.md`.
+**Decision (locked):** All resource endpoints under `/api/v1/`.
+
+- Versioned: `/api/v1/tickets`, `/api/v1/users`, …
+- Unversioned health: `GET /health` (ops/liveness only)
 
 ## 8. Deployment View (Assessment)
 
@@ -126,9 +129,19 @@ Local only:
 | Security | Input validation, no secrets, CORS whitelist |
 | Observability | Structured logs; health endpoint `GET /health` |
 
-## 11. Related Documents
+## 11. Implementation Notes (Non-Negotiable)
+
+| Topic | Rule |
+|-------|------|
+| Invalid status HTTP code | Always **409** (not 400) |
+| Route registration | Register `GET /tickets/export` **before** `GET /tickets/{id}` |
+| Status updates | Dedicated endpoint only; general PATCH never mutates status |
+| Export filter | Always `created_by = X-User-Id`; optional list filters narrow within that set |
+
+## 12. Related Documents
 
 - [data-model.md](./data-model.md) — entities and relationships
 - [api-contract.md](./api-contract.md) — endpoints
 - [directory-structure.md](./directory-structure.md) — folder layout
 - [test-strategy.md](./test-strategy.md) — verification
+- [design-review-gate.md](./design-review-gate.md) — design gate findings

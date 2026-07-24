@@ -12,7 +12,7 @@ Define what documentation exists, when to create/update it, and how it supports 
 |-------|---------------------------|
 | 0 — Foundation | directory-structure, git-workflow, coding-standards, security, ai-agents, .cursor/rules |
 | 1 — Requirements | requirements-analysis, acceptance-criteria |
-| 2 — Design | architecture, design-notes, data-model, api-contract, ui-flow |
+| 2 — Design | architecture, design-notes, data-model, api-contract, ui-flow, design-review-gate |
 | 3–5 — Build | Update contract docs as needed; debugging-notes (append) |
 | 6 — Testing | test-strategy (finalize), coverage notes |
 | 7 — Debug | debugging-notes (append) |

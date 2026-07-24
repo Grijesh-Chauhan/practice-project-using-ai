@@ -30,6 +30,7 @@ This folder contains planning, architecture, and lifecycle artifacts **before an
 | [coding-standards.md](./coding-standards.md) | Language and API conventions | Reference |
 | [security.md](./security.md) | Security practices for assessment | Reference |
 | [project-foundation.md](./project-foundation.md) | Master engineering foundation summary | Start here |
+| [design-review-gate.md](./design-review-gate.md) | Architecture/requirements review + DoR | Before Phase 3 |
 
 ## Related Locations
 

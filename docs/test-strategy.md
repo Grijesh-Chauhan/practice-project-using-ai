@@ -40,12 +40,12 @@
 | Test Suite | Coverage |
 |------------|----------|
 | `test_status_transitions.py` | Every allowed transition returns 200 |
-| | Every disallowed transition returns 400/409 |
+| | Every disallowed transition returns **409** |
 | | Terminal states reject all transitions |
 | `test_tickets_api.py` | CRUD, validation 422 |
-| `test_comments_api.py` | Add comment, 404 on bad ticket |
+| `test_comments_api.py` | Add comment, 404 on bad ticket, comment on Closed OK |
 | `test_search_api.py` | Filter by q, status, priority |
-| `test_export_api.py` | CSV content-type; only own tickets |
+| `test_export_api.py` | CSV content-type; only own tickets; 400 without user |
 
 **Setup:**
 - Test database: SQLite in-memory or temp file
@@ -105,7 +105,9 @@ MSW handlers mirroring `api-contract.md` for page-level flows.
 | Cancelled | ✗ | ✗ | ✗ | ✗ | ✗ |
 
 ✓ = must succeed (200)  
-✗ = must fail (400/409)
+✗ = must fail (**409**)
+
+**Assert:** Error body includes `code: "INVALID_STATUS_TRANSITION"`.
 
 ---
 
@@ -163,15 +165,31 @@ test_transition_open_to_closed_returns_409
 
 ---
 
-## 11. Debugging Failed Tests
+## 11. Additional Edge Cases (Must Cover)
+
+| Case | Expected |
+|------|----------|
+| Export without `X-User-Id` | 400 |
+| Export with unknown user ID | 400 |
+| Export excludes other users' tickets | Only own rows |
+| Create with whitespace-only title | 422 |
+| PATCH fields including `status` | 422 |
+| Comment on Closed ticket | 201 |
+| Assign to non-existent user | 422 |
+| Same-status transition | 409 |
+
+---
+
+## 12. Debugging Failed Tests
 
 Document patterns in [debugging-notes.md](./debugging-notes.md).
 
 ---
 
-## 12. Definition of Done (Testing)
+## 13. Definition of Done (Testing)
 
-- [ ] All state machine integration tests pass
+- [ ] All state machine integration tests pass (25-cell matrix → 409 on ✗)
 - [ ] CRUD integration tests pass
+- [ ] Export / X-User-Id edge cases pass
 - [ ] CI green on main
 - [ ] Manual acceptance spot-check completed

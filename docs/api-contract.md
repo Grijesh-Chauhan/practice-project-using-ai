@@ -4,7 +4,8 @@
 **Content-Type:** `application/json`  
 **Active user:** `X-User-Id: <integer>` header (required for create, comment, export; optional elsewhere)
 
-> This is a planning contract. Update when implementation diverges.
+> This is a planning contract. Update when implementation diverges.  
+> **Locked decisions:** `/api/v1` prefix; invalid status → **409**; CSV ticket fields only.
 
 ---
 
@@ -24,11 +25,29 @@
 }
 ```
 
+Optional `field` for validation errors.
+
+---
+
+## Validation Rules
+
+| Field / Context | Rule | HTTP |
+|-----------------|------|------|
+| `title` | Required; trimmed length 1–255 | 422 |
+| `description` | Required; trimmed length ≥ 1 | 422 |
+| `priority` | `low` \| `medium` \| `high` | 422 |
+| `assigned_to` | Null OK; else must exist in `users` | 422 |
+| `status` (create) | Ignored if sent; always set to `Open` | — |
+| `status` (PATCH fields) | Not accepted on general PATCH | 422 |
+| `status` (transition) | Must be allowed from current | **409** |
+| `message` (comment) | Required; trimmed length 1–5000 | 422 |
+| `X-User-Id` | Required on create/comment/export; must exist | **400** |
+
 ---
 
 ## Health
 
-### `GET /health`
+### `GET /health` (unversioned — `http://localhost:8000/health`)
 **Response 200**
 ```json
 { "status": "ok" }
@@ -51,6 +70,8 @@ List seeded users (for assignee dropdown).
 ---
 
 ## Tickets
+
+> **Route order:** Register `GET /tickets/export` before `GET /tickets/{id}`.
 
 ### `GET /tickets`
 List tickets with optional filters.
@@ -87,7 +108,9 @@ List tickets with optional filters.
 ```
 
 ### `POST /tickets`
-Create ticket. `created_by` set from `X-User-Id`.
+Create ticket. `created_by` set from `X-User-Id`. Status always `Open`.
+
+**Headers:** `X-User-Id` required
 
 **Request**
 ```json
@@ -99,12 +122,12 @@ Create ticket. `created_by` set from `X-User-Id`.
 }
 ```
 
-**Response 201** — Ticket object (status defaults to `Open`)
-
+**Response 201** — Ticket object (status = `Open`)  
+**Response 400** — Missing/invalid `X-User-Id`  
 **Response 422** — Validation error
 
 ### `GET /tickets/{id}`
-**Response 200** — Ticket object with nested comments:
+**Response 200** — Ticket object with nested comments ordered by `created_at` ASC:
 ```json
 {
   "id": 1,
@@ -131,7 +154,7 @@ Create ticket. `created_by` set from `X-User-Id`.
 **Response 404** — Ticket not found
 
 ### `PATCH /tickets/{id}`
-Update fields (not status).
+Update fields (**not** status). Status key in body → 422.
 
 **Request** (all optional)
 ```json
@@ -145,7 +168,7 @@ Update fields (not status).
 
 **Response 200** — Updated ticket  
 **Response 404** — Not found  
-**Response 422** — Validation error
+**Response 422** — Validation error (including unknown assignee, status field present)
 
 ### `PATCH /tickets/{id}/status`
 Change status via state machine.
@@ -156,13 +179,15 @@ Change status via state machine.
 ```
 
 **Response 200** — Updated ticket  
-**Response 400/409** — Invalid transition (`INVALID_STATUS_TRANSITION`)  
+**Response 409** — Invalid transition (`INVALID_STATUS_TRANSITION`)  
 **Response 404** — Not found
 
 ### `GET /tickets/export`
 Export tickets created by current user (`X-User-Id`) as CSV.
 
-**Query params:** Same filters as list (optional)
+**Headers:** `X-User-Id` required
+
+**Query params:** Optional list filters (`q`, `status`, `priority`, `assigned_to`, `skip`, `limit`) apply **within** `created_by = X-User-Id`. Do not pass `created_by` (server overrides).
 
 **Response 200**
 - `Content-Type: text/csv`
@@ -170,19 +195,26 @@ Export tickets created by current user (`X-User-Id`) as CSV.
 
 **CSV columns:** id, title, description, priority, status, assigned_to, created_by, created_at, updated_at
 
+**Response 400** — Missing/invalid `X-User-Id`
+
 ---
 
 ## Comments
 
 ### `POST /tickets/{id}/comments`
+Allowed for any ticket status including Closed/Cancelled.
+
+**Headers:** `X-User-Id` required
+
 **Request**
 ```json
 { "message": "Customer confirmed fix" }
 ```
 
 **Response 201** — Comment object  
+**Response 400** — Missing/invalid `X-User-Id`  
 **Response 404** — Ticket not found  
-**Response 422** — Empty message
+**Response 422** — Empty/oversized message
 
 ---
 
@@ -196,6 +228,8 @@ Export tickets created by current user (`X-User-Id`) as CSV.
 | Closed | *(none)* |
 | Cancelled | *(none)* |
 
+Same-status transitions (e.g. Open → Open) are **invalid** → 409.
+
 ---
 
 ## HTTP Status Code Summary
@@ -204,7 +238,8 @@ Export tickets created by current user (`X-User-Id`) as CSV.
 |------|-------|
 | 200 | Success (GET, PATCH) |
 | 201 | Created (POST) |
-| 400/409 | Invalid status transition |
+| 400 | Missing/invalid `X-User-Id` |
+| 409 | Invalid status transition |
 | 404 | Resource not found |
 | 422 | Validation error |
 | 500 | Unexpected server error (no stack trace in body) |
@@ -213,7 +248,7 @@ Export tickets created by current user (`X-User-Id`) as CSV.
 
 ## CORS (Development)
 
-Allow `http://localhost:5173` with credentials if needed.
+Allow `http://localhost:5173` with credentials if needed. Allow header `X-User-Id`.
 
 ---
 
@@ -222,3 +257,4 @@ Allow `http://localhost:5173` with credentials if needed.
 | Date | Change |
 |------|--------|
 | 2026-07-24 | Initial contract |
+| 2026-07-24 | Design review: lock 409; validation table; export/route notes; X-User-Id errors |

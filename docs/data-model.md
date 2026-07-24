@@ -134,7 +134,23 @@ Seed must be idempotent or documented as "reset DB first."
 
 - No soft delete; tickets are permanent for assessment
 - `assigned_to` nullable = unassigned
-- Description required on create (empty string rejected)
+- Description required on create (empty/whitespace string rejected)
+- Title required; trimmed length 1–255
+- Comment message required; trimmed length 1–5000
+- Comments and field updates allowed on Closed/Cancelled tickets
+- Status transitions for Closed/Cancelled always rejected
+
+---
+
+## Validation Summary (Schema + App)
+
+| Constraint | Enforced In |
+|------------|-------------|
+| NOT NULL / FK / lengths | DB + Alembic |
+| Enums (status, priority) | Pydantic + service |
+| State machine | Service only |
+| Assignee exists | Service / FK |
+| Creator exists (`X-User-Id`) | Service |
 
 ---
 

@@ -47,9 +47,11 @@ ALLOWED_TRANSITIONS = {
 
 ## 5. Status Update API Shape
 
-**Decision:** Dedicated `PATCH /api/tickets/{id}/status` with body `{"status": "In Progress"}`.
+**Decision:** Dedicated `PATCH /api/v1/tickets/{id}/status` with body `{"status": "In Progress"}`.
 
 **Why:** Separates lifecycle changes from field updates; easier to test and audit. General PATCH for title/description/priority/assignee remains separate.
+
+**HTTP on invalid transition:** **409 Conflict** with `code: INVALID_STATUS_TRANSITION` (locked — do not use 400).
 
 **Alternative:** Single PATCH with optional status field — rejected to avoid accidental status changes during field edits.
 
@@ -61,11 +63,16 @@ ALLOWED_TRANSITIONS = {
 
 ## 7. CSV Export
 
-**Decision:** `GET /api/tickets/export?format=csv` filtered server-side by `created_by = current user`.
+**Decision:** `GET /api/v1/tickets/export` filtered server-side by `created_by = X-User-Id`.
 
 **Why:** Server enforces "self-created" rule; frontend triggers download via blob response.
 
-**CSV columns (proposed):** id, title, description, priority, status, assignedTo, createdBy, createdAt, updatedAt
+**CSV columns (locked):** id, title, description, priority, status, assigned_to, created_by, created_at, updated_at  
+**Not included:** comments (one row per ticket only).
+
+**Optional query filters** (`q`, `status`, `priority`, …) further narrow **within** the current user's tickets. They must not expand the set beyond `created_by = X-User-Id`.
+
+**Route order:** Declare `/tickets/export` before `/tickets/{id}` so FastAPI does not treat `export` as an ID.
 
 ## 8. Frontend State Management
 
@@ -118,6 +125,20 @@ ALLOWED_TRANSITIONS = {
 
 | Item | Status | Notes |
 |------|--------|-------|
-| Pagination on ticket list | Deferred | Optional; use limit/offset if list grows |
+| Pagination on ticket list | Deferred | `skip`/`limit` in contract; UI may ignore initially |
 | Soft delete tickets | Out of scope | Hard delete not required |
 | Comment edit/delete | Out of scope | Add-only for core |
+| Active user without auth | **Locked** | `X-User-Id` + `VITE_DEFAULT_USER_ID` |
+| CSV comments column | **Locked** | Omitted — ticket fields only |
+| Comment sort order | **Locked** | `created_at` ASC |
+| Field edits on terminal status | **Locked** | Allowed |
+| Comments on terminal status | **Locked** | Allowed |
+| Invalid transition HTTP code | **Locked** | 409 |
+| API prefix | **Locked** | `/api/v1` |
+
+## Changelog
+
+| Date | Change |
+|------|--------|
+| 2026-07-24 | Initial design notes |
+| 2026-07-24 | Design review gate: locked open decisions; 409; export route order |

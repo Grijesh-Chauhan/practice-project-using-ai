@@ -88,8 +88,8 @@
 **Edit fields:** Link/button to edit title, description, priority, assignee (PATCH)
 
 **Comments section:**
-- List: author name, timestamp, message (newest last or first — pick one, document)
-- Form: textarea + "Add Comment"
+- List: author name, timestamp, message — chronological ascending (`created_at` ASC — oldest first)
+- Form: textarea + "Add Comment" (available even when status is Closed/Cancelled)
 
 ---
 
