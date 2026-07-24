@@ -145,3 +145,5 @@ Local only:
 - [directory-structure.md](./directory-structure.md) — folder layout
 - [test-strategy.md](./test-strategy.md) — verification
 - [design-review-gate.md](./design-review-gate.md) — design gate findings
+- [backend-architecture.md](./backend-architecture.md) — Phase 3 implementation blueprint (DI, lifecycle, transactions)
+- [implementation-order.md](./implementation-order.md) — backend coding milestones

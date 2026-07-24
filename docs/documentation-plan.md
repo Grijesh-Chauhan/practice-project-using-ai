@@ -13,8 +13,9 @@ Define what documentation exists, when to create/update it, and how it supports 
 | 0 — Foundation | directory-structure, git-workflow, coding-standards, security, ai-agents, .cursor/rules |
 | 1 — Requirements | requirements-analysis, acceptance-criteria |
 | 2 — Design | architecture, design-notes, data-model, api-contract, ui-flow, design-review-gate |
-| 3–5 — Build | Update contract docs as needed; debugging-notes (append) |
-| 6 — Testing | test-strategy (finalize), coverage notes |
+| 2b — Backend blueprints | backend-architecture, backend-module-design, backend-folder-guide, error-handling-strategy, configuration-strategy, database-strategy, logging-monitoring, testing-plan-backend, implementation-order |
+| 3–5 — Build | Follow implementation-order; update contract docs as needed; debugging-notes (append) |
+| 6 — Testing | test-strategy (finalize), testing-plan-backend execution, coverage notes |
 | 7 — Debug | debugging-notes (append) |
 | 8 — Review | code-review-notes |
 | 9 — Docs | README (final), reflection |
@@ -98,6 +99,12 @@ Define what documentation exists, when to create/update it, and how it supports 
 **Purpose:** Index of all docs.  
 **Audience:** Navigation.  
 **Update when:** New doc added.
+
+### Backend Phase 3 blueprints
+**Purpose:** Implementation-ready backend engineering guides (no application source).  
+**Documents:** `backend-architecture`, `backend-module-design`, `backend-folder-guide`, `error-handling-strategy`, `configuration-strategy`, `database-strategy`, `logging-monitoring`, `testing-plan-backend`, `implementation-order`.  
+**Audience:** Backend implementers / Cursor agents.  
+**Update when:** Implementation discovers a missing convention (prefer linking to locked contracts over rewriting).
 
 ---
 

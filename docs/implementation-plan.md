@@ -157,6 +157,10 @@ and relationships match requirements.
 ### Objective
 Implement FastAPI backend with layered architecture, persistence, migrations, seed data, and state machine.
 
+### Implementation guide
+Follow milestones in [implementation-order.md](./implementation-order.md).  
+Blueprints: [backend-architecture.md](./backend-architecture.md), [backend-module-design.md](./backend-module-design.md), [backend-folder-guide.md](./backend-folder-guide.md), [error-handling-strategy.md](./error-handling-strategy.md), [configuration-strategy.md](./configuration-strategy.md), [database-strategy.md](./database-strategy.md), [logging-monitoring.md](./logging-monitoring.md), [testing-plan-backend.md](./testing-plan-backend.md).
+
 ### Deliverables
 - `backend/pyproject.toml` (UV)
 - `backend/app/` full structure per directory-structure.md
@@ -167,7 +171,7 @@ Implement FastAPI backend with layered architecture, persistence, migrations, se
 - `GET /health`
 
 ### Dependencies
-Phase 2 complete.
+Phase 2 complete; backend blueprints under `docs/` reviewed.
 
 ### Acceptance Criteria
 - All api-contract endpoints work via curl/httpx
