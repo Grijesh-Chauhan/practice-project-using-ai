@@ -143,3 +143,9 @@ artifacts/prompt-history/*.zip
 
 # Local database data (use migrations + seed instead)
 backend/data/*.db
+
+# Local toolchain installs
+.tools/
+
+# Alternate local venv path (sandbox / custom UV_PROJECT_ENVIRONMENT)
+backend/.runtime-venv/

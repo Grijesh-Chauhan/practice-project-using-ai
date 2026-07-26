@@ -1,16 +1,20 @@
-"""
-Seed database with sample users, tickets, and comments.
-Run from repo root: uv run python scripts/seed_db.py
-Requires backend app and migrations (Phase 3).
+#!/usr/bin/env python3
+"""Database seed script (scaffold).
+
+Populate users, tickets, and comments after models and migrations exist.
+Run from repository root:
+
+    cd backend && uv run python ../scripts/seed_db.py
 """
 
 from __future__ import annotations
 
 
 def main() -> None:
+    """Seed placeholder — implement after ORM models are available."""
     raise SystemExit(
-        "Seed script not implemented yet. Complete in Phase 3 backend development.\n"
-        "See docs/data-model.md for seed data requirements."
+        "seed_db.py is not implemented yet. "
+        "Add models + Alembic migrations first, then seed demo data."
     )
 
 

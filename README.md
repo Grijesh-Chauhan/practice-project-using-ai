@@ -1,116 +1,156 @@
 # Support Ticket Management System
 
-> **Status:** Engineering foundation complete — implementation not started.
-> See [docs/project-foundation.md](./docs/project-foundation.md) to begin.
+AI-assisted full-stack assessment project for creating, assigning, transitioning, commenting on, searching, and exporting support tickets.
 
----
+> **Status:** Project scaffold complete — business features not implemented yet.  
+> Engineering foundation: [docs/project-foundation.md](./docs/project-foundation.md)
 
-## README Outline
+## Tech stack
 
-*Final README to be written in Phase 9. Sections below define required content.*
+| Layer | Stack |
+|-------|--------|
+| Backend | Python 3.13+, FastAPI, SQLAlchemy, Alembic, SQLite, UV |
+| Frontend | React, TypeScript, Vite, Material UI, TanStack Query, Axios, React Router, React Hook Form, Zod |
+| Tooling | Ruff, Black, MyPy, Pytest, ESLint, Prettier, Pre-commit, GitHub Actions |
 
-### 1. Project Title & Description
-- Support Ticket Management System
-- AI-assisted full-stack assessment project
-- Brief feature list (create, assign, status workflow, comments, search, CSV export)
+Architecture details: [docs/architecture.md](./docs/architecture.md)
 
-### 2. Tech Stack
-- Backend: Python 3.13+, FastAPI, SQLAlchemy, SQLite, UV
-- Frontend: React, TypeScript, Vite, MUI, TanStack Query
-- Link to `docs/architecture.md` for details
+## Prerequisites
 
-### 3. Prerequisites
 - Python 3.13+
-- Node.js 20+ (LTS)
-- UV package manager
+- [UV](https://docs.astral.sh/uv/) package manager
+- Node.js 20+ (LTS recommended)
+- npm
 - Git
 
-### 4. Repository Structure
-- Brief tree: `backend/`, `frontend/`, `docs/`, `artifacts/`, `scripts/`
-- Link to `docs/directory-structure.md`
+## Repository structure
 
-### 5. Quick Start
+```text
+new-project/
+├── backend/          # FastAPI application (UV)
+├── frontend/         # React + Vite SPA
+├── docs/             # Planning & architecture (source of truth)
+├── artifacts/        # Assessment artifacts
+├── scripts/          # Bootstrap / seed / run helpers
+├── .github/          # CI, PR & issue templates
+└── .cursor/          # Cursor rules
+```
+
+Full tree: [docs/directory-structure.md](./docs/directory-structure.md)
+
+## Quick start
+
 ```bash
-# Outline only — commands to be verified in Phase 9
 git clone <repo-url>
 cd new-project
 ./scripts/bootstrap.sh
-# Backend setup
-cd backend && uv sync
+```
+
+### Backend
+
+```bash
+cd backend
+uv sync --group dev
 cp .env.example .env
-uv run alembic upgrade head
-uv run python ../scripts/seed_db.py
 uv run uvicorn app.main:app --reload
-# Frontend setup (separate terminal)
-cd frontend && npm install
+```
+
+- API docs: http://localhost:8000/docs
+- Health: http://localhost:8000/health
+
+Useful UV commands:
+
+```bash
+uv sync --group dev          # install runtime + dev deps
+uv run ruff check app tests  # lint
+uv run black app tests       # format
+uv run mypy app              # typecheck
+uv run pytest                # tests
+uv run alembic upgrade head  # migrations (after models exist)
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
 cp .env.example .env
 npm run dev
 ```
 
-### 6. Environment Variables
+- App: http://localhost:5173
 
-#### Backend (`backend/.env`)
+Useful npm commands:
+
+```bash
+npm run dev           # Vite dev server
+npm run lint          # ESLint
+npm run format        # Prettier write
+npm run format:check  # Prettier check
+npm run build         # production build
+```
+
+### Both servers
+
+```bash
+./scripts/run_dev.sh
+```
+
+## Environment variables
+
+### Backend (`backend/.env`)
+
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | SQLite connection string | `sqlite:///./data/tickets.db` |
-| `CORS_ORIGINS` | Allowed frontend origins | `http://localhost:5173` |
+| `DATABASE_URL` | SQLAlchemy URL | `sqlite:///./data/tickets.db` |
+| `CORS_ORIGINS` | Allowed origins (CSV) | `http://localhost:5173` |
+| `APP_NAME` | OpenAPI title | `Support Ticket API` |
+| `APP_ENV` | `development` \| `production` \| `test` | `development` |
+| `LOG_LEVEL` | Logging level | `INFO` |
+| `API_V1_PREFIX` | API mount prefix | `/api/v1` |
 
-#### Frontend (`frontend/.env`)
+### Frontend (`frontend/.env`)
+
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `VITE_API_URL` | Backend API base | `http://localhost:8000/api/v1` |
-| `VITE_DEFAULT_USER_ID` | Demo user for X-User-Id | `1` |
+| `VITE_DEFAULT_USER_ID` | Demo user for `X-User-Id` | `1` |
 
-### 7. Running Tests
+Root `.env.example` points at the package-specific examples.
+
+## Development workflow
+
+1. Create a branch: `cursor/<short-description>`
+2. Install hooks once: `cd backend && uv run pre-commit install` (from repo root: `uv run --directory backend pre-commit install`)
+3. Implement behind thin API / service layers — see Cursor rules under `.cursor/rules/`
+4. Run lint, types, and tests before opening a PR
+5. Open a PR using the template in `.github/PULL_REQUEST_TEMPLATE.md`
+
+Git conventions: [docs/git-workflow.md](./docs/git-workflow.md)
+
+## Tests
+
 ```bash
 # Backend
 cd backend && uv run pytest
 
-# Frontend
-cd frontend && npm test
+# Frontend (scaffold has lint/build; unit tests added later)
+cd frontend && npm run lint && npm run build
 ```
 
-### 8. API Documentation
-- Swagger UI: `http://localhost:8000/docs`
-- Contract: `docs/api-contract.md`
-
-### 9. Ticket Status Workflow
-- Diagram or link to `ProjectNeed.md` / `docs/design-notes.md`
-- Note: invalid transitions rejected by backend
-
-### 10. CSV Export
-- Export button on ticket list
-- Downloads tickets created by current user
-
-### 11. Development Workflow
-- Branch naming: `cursor/<description>`
-- Link to `docs/git-workflow.md`
-- Pre-commit: `uv run pre-commit install`
-
-### 12. Documentation
-- Index: `docs/README.md`
-- Planning, architecture, test strategy
-
-### 13. Assessment Artifacts
-- `/artifacts/tool-workflow.md`
-- `/artifacts/prompt-history/`
-- `/docs/reflection.md`
-
-### 14. Known Limitations
-- No authentication in core (demo user via header)
-- SQLite for local dev only
-- See `docs/security.md`
-
-### 15. License
-- TBD / assessment project
-
----
-
-## Links
+## Documentation
 
 | Resource | Path |
 |----------|------|
-| Start here | [docs/project-foundation.md](./docs/project-foundation.md) |
+| Docs index | [docs/README.md](./docs/README.md) |
 | Implementation plan | [docs/implementation-plan.md](./docs/implementation-plan.md) |
 | API contract | [docs/api-contract.md](./docs/api-contract.md) |
 | Acceptance criteria | [docs/acceptance-criteria.md](./docs/acceptance-criteria.md) |
+
+## Known limitations (assessment scope)
+
+- No authentication in core (demo user via `X-User-Id`)
+- SQLite for local development
+- Scaffold phase only — ticket/comment/user business logic not implemented yet
+
+See [docs/security.md](./docs/security.md).
