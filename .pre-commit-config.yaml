@@ -1,0 +1,46 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff (backend)
+        entry: bash -c 'cd backend && uv run ruff check app tests --fix'
+        language: system
+        pass_filenames: false
+        files: ^backend/
+
+      - id: black
+        name: black (backend)
+        entry: bash -c 'cd backend && uv run black app tests'
+        language: system
+        pass_filenames: false
+        files: ^backend/
+
+      - id: mypy
+        name: mypy (backend)
+        entry: bash -c 'cd backend && uv run mypy app'
+        language: system
+        pass_filenames: false
+        files: ^backend/app/
+
+      - id: frontend-eslint
+        name: eslint (frontend)
+        entry: bash -c 'cd frontend && npm run lint'
+        language: system
+        pass_filenames: false
+        files: ^frontend/
+
+      - id: frontend-prettier
+        name: prettier (frontend)
+        entry: bash -c 'cd frontend && npm run format:check'
+        language: system
+        pass_filenames: false
+        files: ^frontend/
