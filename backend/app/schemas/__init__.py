@@ -1,6 +1,6 @@
 """Pydantic schemas package."""
 
-from app.schemas.comment import CommentRead
+from app.schemas.comment import CommentCreate, CommentRead
 from app.schemas.common import ErrorResponse
 from app.schemas.ticket import (
     Priority,
@@ -16,6 +16,7 @@ from app.schemas.ticket import (
 from app.schemas.user import UserRead
 
 __all__ = [
+    "CommentCreate",
     "CommentRead",
     "ErrorResponse",
     "Priority",

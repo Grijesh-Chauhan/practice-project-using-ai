@@ -20,4 +20,7 @@ def configure_logging(level: str = "INFO") -> None:
         )
         root.addHandler(handler)
 
-    logging.getLogger("app").setLevel(log_level)
+    # Alembic fileConfig may leave existing loggers disabled; re-enable ours.
+    app_logger = logging.getLogger("app")
+    app_logger.disabled = False
+    app_logger.setLevel(log_level)

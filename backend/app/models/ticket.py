@@ -68,6 +68,6 @@ class Ticket(Base):
     comments: Mapped[list[Comment]] = relationship(
         "Comment",
         back_populates="ticket",
-        order_by="Comment.created_at",
+        order_by="Comment.created_at, Comment.id",
         cascade="all, delete-orphan",
     )

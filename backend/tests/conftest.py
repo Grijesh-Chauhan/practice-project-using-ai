@@ -111,3 +111,8 @@ def db_client(migrated_engine: Engine) -> Generator[TestClient]:
     with TestClient(application) as test_client:
         yield test_client
     application.dependency_overrides.clear()
+
+
+def auth_headers(user_id: int) -> dict[str, str]:
+    """Build the X-User-Id header used by create/comment/export routes."""
+    return {"X-User-Id": str(user_id)}
