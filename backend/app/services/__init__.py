@@ -1,1 +1,5 @@
-"""Service package (business logic added in later phases)."""
+"""Service package."""
+
+from app.services.user_service import UserService
+
+__all__ = ["UserService"]

@@ -1,1 +1,5 @@
-"""Repository package (data access added in later phases)."""
+"""Repository package."""
+
+from app.repositories.user_repository import UserRepository
+
+__all__ = ["UserRepository"]
