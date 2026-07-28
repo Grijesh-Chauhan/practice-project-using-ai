@@ -12,6 +12,7 @@ This folder contains planning, architecture, and lifecycle artifacts **before an
 |----------|---------|---------------------|
 | [requirements-analysis.md](./requirements-analysis.md) | Business needs, scope, assumptions | Phase 1; update if scope changes |
 | [acceptance-criteria.md](./acceptance-criteria.md) | Testable success conditions | Phase 1; verify before submission |
+| [business-rules.md](./business-rules.md) | Consolidated domain rules + where enforced | Reference; update on rule changes |
 | [implementation-plan.md](./implementation-plan.md) | Phase-wise roadmap and prompts | Phase 0–10; track progress |
 | [design-notes.md](./design-notes.md) | Design decisions and trade-offs | Phase 2+ |
 | [architecture.md](./architecture.md) | System structure and layers | Phase 2; update on structural changes |
@@ -21,6 +22,7 @@ This folder contains planning, architecture, and lifecycle artifacts **before an
 | [test-strategy.md](./test-strategy.md) | Testing approach and coverage | Phase 2, 6 |
 | [debugging-notes.md](./debugging-notes.md) | Issues encountered and fixes | Phase 7; append as you debug |
 | [code-review-notes.md](./code-review-notes.md) | Review findings and resolutions | Phase 8 |
+| [rca-csv-export-stub.md](./rca-csv-export-stub.md) | Sample Root Cause Analysis (export stub bug) | Reference |
 | [reflection.md](./reflection.md) | AI workflow lessons learned | Phase 9–10 |
 | [pr-description.md](./pr-description.md) | PR template for submissions | Each PR |
 | [documentation-plan.md](./documentation-plan.md) | How docs are maintained | Reference |

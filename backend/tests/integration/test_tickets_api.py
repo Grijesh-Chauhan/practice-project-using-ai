@@ -210,11 +210,16 @@ def test_list_tickets_returns_items_and_total(
 
 def test_export_route_registered_before_id(
     db_client: TestClient,
+    seed_users: list[User],
 ) -> None:
-    """GET /tickets/export is registered (stub) and not treated as {id}."""
-    response = db_client.get("/api/v1/tickets/export")
-    assert response.status_code == 501
-    assert response.json()["code"] == "NOT_IMPLEMENTED"
+    """GET /tickets/export is routed to export (CSV), not treated as {id}."""
+    alice = seed_users[0]
+    response = db_client.get(
+        "/api/v1/tickets/export",
+        headers=auth_headers(alice.id),
+    )
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
 
 
 def test_unknown_assignee_returns_422(

@@ -60,7 +60,24 @@
 
 ## Review Sessions
 
-*(Add sessions below during Phase 8)*
+### Review 2026-07-27 — Final pre-submission full-repo review
+**Reviewer:** AI (Principal-Engineer review pass) + self
+**Scope:** Entire repository (backend, frontend, tests, docs, CI, artifacts) vs.
+`requirements-analysis`, `acceptance-criteria`, `api-contract`, `business-rules`,
+`test-strategy`, `coding-standards`, `implementation-plan`.
+
+| # | Severity | Finding | Status | Resolution |
+|---|----------|---------|--------|------------|
+| 1 | High | `GET /tickets/export` returned `501` stub; CSV export (FR-07, AC-040–043) broken end to end though FE + repository were wired. | Fixed | Implemented `csv_export` util + `TicketService.list_for_export` + real endpoint; see RCA-001. |
+| 2 | High | A test asserted the `501` stub, masking the missing feature under green CI. | Fixed | Rewrote test to assert CSV; added `test_export_api.py`. |
+| 3 | Medium | Seed script seeded users only ("deferred to M8"); fresh clone had no tickets (AC-051). | Fixed | Seed 5 sample tickets idempotently. |
+| 4 | Medium | No search/filter API tests and no export API tests (test-strategy lists both). | Fixed | Added `test_search_api.py`, `test_export_api.py`, `test_csv_export.py`. |
+| 5 | Medium | Root `README` described project as "scaffold — business features not implemented yet" (stale). | Fixed | Updated status, run/seed steps, tests, known limitations. |
+| 6 | Low | `docs/business-rules.md` referenced by review scope but missing; rules scattered. | Fixed | Added consolidated `business-rules.md` with enforcement mapping. |
+| 7 | Low | API timestamps serialized as naive ISO 8601 (no `Z`/offset) due to SQLite. | Documented | Recorded as known limitation (avoided large refactor). |
+| 8 | Info | Backend layering, exception envelope, state machine, and DI are clean and consistent with docs. | Pass | No change. |
+
+**Verification:** Ruff/Black/MyPy(strict)/Pytest green (101 tests); ESLint/tsc/Prettier/Vitest(16)/build green; manual E2E against seeded server incl. export.
 
 ---
 

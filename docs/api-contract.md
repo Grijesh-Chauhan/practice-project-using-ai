@@ -1,10 +1,10 @@
 # API Contract
 
-**Base URL:** `http://localhost:8000/api/v1`  
-**Content-Type:** `application/json`  
+**Base URL:** `http://localhost:8000/api/v1`
+**Content-Type:** `application/json`
 **Active user:** `X-User-Id: <integer>` header (required for create, comment, export; optional elsewhere)
 
-> This is a planning contract. Update when implementation diverges.  
+> This is a planning contract. Update when implementation diverges.
 > **Locked decisions:** `/api/v1` prefix; invalid status → **409**; CSV ticket fields only.
 
 ---
@@ -122,8 +122,8 @@ Create ticket. `created_by` set from `X-User-Id`. Status always `Open`.
 }
 ```
 
-**Response 201** — Ticket object (status = `Open`)  
-**Response 400** — Missing/invalid `X-User-Id`  
+**Response 201** — Ticket object (status = `Open`)
+**Response 400** — Missing/invalid `X-User-Id`
 **Response 422** — Validation error
 
 ### `GET /tickets/{id}`
@@ -166,8 +166,8 @@ Update fields (**not** status). Status key in body → 422.
 }
 ```
 
-**Response 200** — Updated ticket  
-**Response 404** — Not found  
+**Response 200** — Updated ticket
+**Response 404** — Not found
 **Response 422** — Validation error (including unknown assignee, status field present)
 
 ### `PATCH /tickets/{id}/status`
@@ -178,8 +178,8 @@ Change status via state machine.
 { "status": "In Progress" }
 ```
 
-**Response 200** — Updated ticket  
-**Response 409** — Invalid transition (`INVALID_STATUS_TRANSITION`)  
+**Response 200** — Updated ticket
+**Response 409** — Invalid transition (`INVALID_STATUS_TRANSITION`)
 **Response 404** — Not found
 
 ### `GET /tickets/export`
@@ -211,9 +211,9 @@ Allowed for any ticket status including Closed/Cancelled.
 { "message": "Customer confirmed fix" }
 ```
 
-**Response 201** — Comment object  
-**Response 400** — Missing/invalid `X-User-Id`  
-**Response 404** — Ticket not found  
+**Response 201** — Comment object
+**Response 400** — Missing/invalid `X-User-Id`
+**Response 404** — Ticket not found
 **Response 422** — Empty/oversized message
 
 ---
@@ -258,3 +258,4 @@ Allow `http://localhost:5173` with credentials if needed. Allow header `X-User-I
 |------|--------|
 | 2026-07-24 | Initial contract |
 | 2026-07-24 | Design review: lock 409; validation table; export/route notes; X-User-Id errors |
+| 2026-07-27 | Implementation verified: all endpoints live, incl. `GET /tickets/export` (CSV) matching this contract |

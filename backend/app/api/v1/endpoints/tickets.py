@@ -1,7 +1,7 @@
 """Ticket API endpoints."""
 
 from fastapi import APIRouter, Query
-from fastapi.responses import JSONResponse
+from fastapi.responses import Response
 
 from app.api.deps import RequireUserId, TicketSvc
 from app.schemas.ticket import (
@@ -15,19 +15,40 @@ from app.schemas.ticket import (
     TicketStatusUpdate,
     TicketUpdate,
 )
+from app.utils.csv_export import build_tickets_csv
 
 router = APIRouter(prefix="/tickets", tags=["tickets"])
 
+# Export a generous page so small assessment datasets are never truncated,
+# while still bounding memory. Registered before /{id} for correct routing.
+EXPORT_DEFAULT_LIMIT = 1000
+EXPORT_MAX_LIMIT = 10000
+
 
 @router.get("/export")
-def export_tickets_stub() -> JSONResponse:
-    """Path-order stub for CSV export (implemented in Milestone 8)."""
-    return JSONResponse(
-        status_code=501,
-        content={
-            "detail": "CSV export will be implemented in Milestone 8",
-            "code": "NOT_IMPLEMENTED",
-        },
+def export_tickets(
+    service: TicketSvc,
+    created_by: RequireUserId,
+    q: str | None = None,
+    status: TicketStatus | None = None,
+    priority: Priority | None = None,
+    assigned_to: int | None = None,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=EXPORT_DEFAULT_LIMIT, ge=1, le=EXPORT_MAX_LIMIT),
+) -> Response:
+    """Export the caller's own tickets (created_by = X-User-Id) as CSV."""
+    filters = TicketFilters(
+        q=q,
+        status=status,
+        priority=priority,
+        assigned_to=assigned_to,
+    )
+    tickets = service.list_for_export(created_by, filters, skip=skip, limit=limit)
+    csv_body = build_tickets_csv(tickets)
+    return Response(
+        content=csv_body,
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="my-tickets.csv"'},
     )
 
 

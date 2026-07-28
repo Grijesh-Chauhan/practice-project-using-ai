@@ -2,7 +2,9 @@
 
 AI-assisted full-stack assessment project for creating, assigning, transitioning, commenting on, searching, and exporting support tickets.
 
-> **Status:** Project scaffold complete — business features not implemented yet.  
+> **Status:** Core implementation complete — ticket CRUD, enforced status state
+> machine, comments, search/filter, and CSV export are implemented end to end
+> with backend and frontend tests passing.
 > Engineering foundation: [docs/project-foundation.md](./docs/project-foundation.md)
 
 ## Tech stack
@@ -52,11 +54,16 @@ cd new-project
 cd backend
 uv sync --group dev
 cp .env.example .env
+uv run alembic upgrade head            # create the SQLite schema
+uv run python ../scripts/seed_db.py    # seed 3 demo users + 5 sample tickets
 uv run uvicorn app.main:app --reload
 ```
 
 - API docs: http://localhost:8000/docs
 - Health: http://localhost:8000/health
+
+> Data persists in `backend/data/tickets.db`. Re-running the seed script is
+> idempotent (users upsert by email; sample tickets only load when empty).
 
 Useful UV commands:
 
@@ -131,11 +138,11 @@ Git conventions: [docs/git-workflow.md](./docs/git-workflow.md)
 ## Tests
 
 ```bash
-# Backend
+# Backend — unit + integration (state machine, CRUD, comments, search, export)
 cd backend && uv run pytest
 
-# Frontend (scaffold has lint/build; unit tests added later)
-cd frontend && npm run lint && npm run build
+# Frontend — Vitest component/unit tests, then lint + production build
+cd frontend && npm test && npm run lint && npm run build
 ```
 
 ## Documentation
@@ -149,8 +156,13 @@ cd frontend && npm run lint && npm run build
 
 ## Known limitations (assessment scope)
 
-- No authentication in core (demo user via `X-User-Id`)
-- SQLite for local development
-- Scaffold phase only — ticket/comment/user business logic not implemented yet
+- No authentication in core; the active user is supplied via the `X-User-Id`
+  header (defaulted in the frontend). Impersonation is possible by design and
+  documented as accepted risk.
+- SQLite is used for local development; single-writer concurrency limits apply.
+- API timestamps are serialized without an explicit UTC offset (naive ISO 8601)
+  because SQLite stores naive datetimes; values are UTC by convention.
+- CSV export returns the caller's own tickets (`created_by = X-User-Id`) and does
+  not include a comments column (one row per ticket), per the API contract.
 
 See [docs/security.md](./docs/security.md).

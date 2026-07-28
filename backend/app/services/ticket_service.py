@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 import logging
 
 from sqlalchemy.orm import Session
@@ -96,6 +97,22 @@ class TicketService:
         if ticket is None:
             raise TicketNotFoundError(ticket_id=ticket_id)
         return ticket
+
+    def list_for_export(
+        self,
+        created_by: int,
+        filters: TicketFilters | None = None,
+        *,
+        skip: int = 0,
+        limit: int = 50,
+    ) -> builtins.list[Ticket]:
+        """Return the caller's own tickets for CSV export (created_by enforced)."""
+        return self._tickets.list_for_export(
+            created_by,
+            filters,
+            skip=skip,
+            limit=limit,
+        )
 
     def update_fields(self, ticket_id: int, data: TicketUpdate) -> Ticket:
         """Update non-status fields and commit on success."""
