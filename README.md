@@ -31,6 +31,7 @@ Architecture details: [docs/architecture.md](./docs/architecture.md)
 new-project/
 ├── backend/          # FastAPI application (UV)
 ├── frontend/         # React + Vite SPA
+├── data/             # Synthetic datasets (e.g. RAG knowledge pack)
 ├── docs/             # Planning & architecture (source of truth)
 ├── artifacts/        # Assessment artifacts
 ├── scripts/          # Bootstrap / seed / run helpers
@@ -39,6 +40,17 @@ new-project/
 ```
 
 Full tree: [docs/directory-structure.md](./docs/directory-structure.md)
+
+## Synthetic RAG knowledge pack (C2 AI assistant)
+
+Fictional support policies, FAQs, and guides for **Retrieval-Augmented Generation** when building an AI support assistant on this application.
+
+| Resource | Path |
+|----------|------|
+| Knowledge pack (Markdown) | [data/support_assistant_rag_knowledge_base/](./data/support_assistant_rag_knowledge_base/) |
+| Ingestion notes | [data/support_assistant_rag_knowledge_base/README.md](./data/support_assistant_rag_knowledge_base/README.md) |
+
+Use these documents for **static** policy and how-to answers. Keep **live** tickets, comments, users, and statuses in the application database and retrieve them through authorized APIs or MCP tools—not by embedding the live database into a vector store. All content is synthetic; do not send client or company confidential data to public LLM APIs.
 
 ## Quick start
 
@@ -158,6 +170,7 @@ cd frontend && npm test && npm run lint && npm run build
 | Implementation plan | [docs/implementation-plan.md](./docs/implementation-plan.md) |
 | API contract | [docs/api-contract.md](./docs/api-contract.md) |
 | Acceptance criteria | [docs/acceptance-criteria.md](./docs/acceptance-criteria.md) |
+| RAG knowledge pack | [data/support_assistant_rag_knowledge_base/README.md](./data/support_assistant_rag_knowledge_base/README.md) |
 
 ## Known limitations (assessment scope)
 
