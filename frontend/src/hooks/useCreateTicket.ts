@@ -11,6 +11,12 @@ export function useCreateTicket() {
     mutationFn: (payload: TicketCreatePayload) => createTicket(payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ticketKeys.lists() });
+      void queryClient.invalidateQueries({
+        queryKey: [...ticketKeys.all, "status-counts"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: [...ticketKeys.all, "stats"],
+      });
     },
   });
 }

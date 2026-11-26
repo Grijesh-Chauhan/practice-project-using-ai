@@ -76,6 +76,78 @@ class TicketRepository:
         items, _total = self.list(export_filters, skip=skip, limit=limit)
         return items
 
+    def aggregate_stats(
+        self,
+        filters: TicketFilters | None = None,
+    ) -> dict[str, object]:
+        """Return dashboard aggregations for the given filter window."""
+        base = self._filtered_query(filters).subquery()
+
+        by_status_rows = self._session.execute(
+            select(base.c.status, func.count())
+            .group_by(base.c.status)
+            .order_by(base.c.status.asc())
+        ).all()
+        by_status = {str(status): int(count) for status, count in by_status_rows}
+
+        by_priority_rows = self._session.execute(
+            select(base.c.priority, func.count())
+            .group_by(base.c.priority)
+            .order_by(base.c.priority.asc())
+        ).all()
+        by_priority = {
+            str(priority): int(count) for priority, count in by_priority_rows
+        }
+
+        status_priority_rows = self._session.execute(
+            select(base.c.status, base.c.priority, func.count())
+            .group_by(base.c.status, base.c.priority)
+            .order_by(base.c.status.asc(), base.c.priority.asc())
+        ).all()
+        by_status_priority = [
+            {
+                "status": str(status),
+                "priority": str(priority),
+                "count": int(count),
+            }
+            for status, priority, count in status_priority_rows
+        ]
+
+        month_expr = func.strftime("%Y-%m", base.c.created_at)
+        created_month_rows = self._session.execute(
+            select(month_expr.label("month"), func.count())
+            .group_by(month_expr)
+            .order_by(month_expr.asc())
+        ).all()
+        created_by_month = [
+            {"month": str(month), "count": int(count)}
+            for month, count in created_month_rows
+            if month is not None
+        ]
+
+        status_month_rows = self._session.execute(
+            select(month_expr.label("month"), base.c.status, func.count())
+            .group_by(month_expr, base.c.status)
+            .order_by(month_expr.asc(), base.c.status.asc())
+        ).all()
+        status_by_month = [
+            {
+                "month": str(month),
+                "status": str(status),
+                "count": int(count),
+            }
+            for month, status, count in status_month_rows
+            if month is not None
+        ]
+
+        return {
+            "by_status": by_status,
+            "by_priority": by_priority,
+            "by_status_priority": by_status_priority,
+            "created_by_month": created_by_month,
+            "status_by_month": status_by_month,
+        }
+
     def _filtered_query(self, filters: TicketFilters | None) -> Select[tuple[Ticket]]:
         """Compose a select with optional list filters (no status rules)."""
         statement: Select[tuple[Ticket]] = select(Ticket)
@@ -98,4 +170,6 @@ class TicketRepository:
             statement = statement.where(Ticket.assigned_to == filters.assigned_to)
         if filters.created_by is not None:
             statement = statement.where(Ticket.created_by == filters.created_by)
+        if filters.created_after is not None:
+            statement = statement.where(Ticket.created_at >= filters.created_after)
         return statement

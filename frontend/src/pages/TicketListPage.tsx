@@ -1,9 +1,10 @@
 import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { getErrorMessage } from "../api/errors";
 import { ErrorAlert } from "../components/common/ErrorAlert";
@@ -13,27 +14,80 @@ import {
   SearchFilters,
   type SearchFiltersValue,
 } from "../components/tickets/SearchFilters";
+import { StatusFilterTabs } from "../components/tickets/StatusFilterTabs";
 import { TicketTable } from "../components/tickets/TicketTable";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useExportTickets } from "../hooks/useExportTickets";
+import { useTicketStatusCounts } from "../hooks/useTicketStatusCounts";
 import { useTickets } from "../hooks/useTickets";
 import { useUsers } from "../hooks/useUsers";
-import type { TicketListParams } from "../types";
-import { DEFAULT_PAGE_SIZE, SEARCH_DEBOUNCE_MS } from "../utils/constants";
+import type { Priority, TicketListParams, TicketStatus } from "../types";
+import {
+  DATE_RANGE_OPTIONS,
+  DEFAULT_DATE_RANGE,
+  DEFAULT_PAGE_SIZE,
+  PRIORITIES,
+  SEARCH_DEBOUNCE_MS,
+  TICKET_STATUSES,
+  createdAfterFromPreset,
+  type DateRangePreset,
+} from "../utils/constants";
 
-const initialFilters: SearchFiltersValue = {
-  q: "",
-  status: "",
-  priority: "",
-  assigned_to: "",
-};
+function parseDateRange(value: string | null): DateRangePreset {
+  if (DATE_RANGE_OPTIONS.some((option) => option.value === value)) {
+    return value as DateRangePreset;
+  }
+  return DEFAULT_DATE_RANGE;
+}
+
+function parseStatus(value: string | null): TicketStatus | "" {
+  if (value && TICKET_STATUSES.includes(value as TicketStatus)) {
+    return value as TicketStatus;
+  }
+  return "";
+}
+
+function parsePriority(value: string | null): Priority | "" {
+  if (value && PRIORITIES.includes(value as Priority)) {
+    return value as Priority;
+  }
+  return "";
+}
+
+function filtersFromSearchParams(searchParams: URLSearchParams): SearchFiltersValue {
+  const assignedRaw = searchParams.get("assigned_to");
+  return {
+    q: searchParams.get("q") ?? "",
+    status: parseStatus(searchParams.get("status")),
+    priority: parsePriority(searchParams.get("priority")),
+    assigned_to:
+      assignedRaw && !Number.isNaN(Number(assignedRaw)) ? Number(assignedRaw) : "",
+    dateRange: parseDateRange(searchParams.get("dateRange")),
+  };
+}
 
 export function TicketListPage() {
   const navigate = useNavigate();
-  const [filters, setFilters] = useState<SearchFiltersValue>(initialFilters);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filters, setFilters] = useState<SearchFiltersValue>(() =>
+    filtersFromSearchParams(searchParams),
+  );
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const debouncedQuery = useDebouncedValue(filters.q, SEARCH_DEBOUNCE_MS);
+
+  const searchKey = searchParams.toString();
+
+  // Keep local filters in sync when navigating from the dashboard with new params.
+  useEffect(() => {
+    setFilters(filtersFromSearchParams(searchParams));
+    setPage(0);
+  }, [searchKey, searchParams]);
+
+  const createdAfter = useMemo(
+    () => createdAfterFromPreset(filters.dateRange),
+    [filters.dateRange],
+  );
 
   const listParams = useMemo<TicketListParams>(() => {
     const params: TicketListParams = {
@@ -52,10 +106,14 @@ export function TicketListPage() {
     if (filters.assigned_to !== "") {
       params.assigned_to = filters.assigned_to;
     }
+    if (createdAfter) {
+      params.created_after = createdAfter;
+    }
     return params;
-  }, [debouncedQuery, filters, page, pageSize]);
+  }, [debouncedQuery, filters, page, pageSize, createdAfter]);
 
   const ticketsQuery = useTickets(listParams);
+  const statusCountsQuery = useTicketStatusCounts(createdAfter);
   const usersQuery = useUsers();
   const exportMutation = useExportTickets();
 
@@ -66,9 +124,33 @@ export function TicketListPage() {
     return map;
   }, [usersQuery.data]);
 
+  const syncUrl = (next: SearchFiltersValue) => {
+    const params: Record<string, string> = {
+      dateRange: next.dateRange,
+    };
+    if (next.q.trim()) {
+      params.q = next.q.trim();
+    }
+    if (next.status) {
+      params.status = next.status;
+    }
+    if (next.priority) {
+      params.priority = next.priority;
+    }
+    if (next.assigned_to !== "") {
+      params.assigned_to = String(next.assigned_to);
+    }
+    setSearchParams(params, { replace: true });
+  };
+
   const handleFiltersChange = (next: SearchFiltersValue) => {
     setFilters(next);
     setPage(0);
+    syncUrl(next);
+  };
+
+  const handleStatusTabChange = (status: TicketStatus | "") => {
+    handleFiltersChange({ ...filters, status });
   };
 
   const exportParams = useMemo(() => {
@@ -85,11 +167,14 @@ export function TicketListPage() {
     if (filters.assigned_to !== "") {
       params.assigned_to = filters.assigned_to;
     }
+    if (createdAfter) {
+      params.created_after = createdAfter;
+    }
     return params;
-  }, [debouncedQuery, filters]);
+  }, [debouncedQuery, filters, createdAfter]);
 
   return (
-    <>
+    <Box>
       <PageHeader
         title="Tickets"
         subtitle="Browse, search, and manage support tickets"
@@ -112,6 +197,13 @@ export function TicketListPage() {
             </Button>
           </>
         }
+      />
+
+      <StatusFilterTabs
+        value={filters.status}
+        onChange={handleStatusTabChange}
+        counts={statusCountsQuery.data}
+        loading={statusCountsQuery.isLoading}
       />
 
       <SearchFilters
@@ -150,6 +242,6 @@ export function TicketListPage() {
           onRowClick={(id) => navigate(`/tickets/${id}`)}
         />
       ) : null}
-    </>
+    </Box>
   );
 }

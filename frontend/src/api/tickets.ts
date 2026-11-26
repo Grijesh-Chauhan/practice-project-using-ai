@@ -5,6 +5,7 @@ import type {
   TicketDetail,
   TicketListParams,
   TicketListResponse,
+  TicketStats,
   TicketStatusUpdatePayload,
   TicketUpdatePayload,
 } from "../types";
@@ -13,6 +14,15 @@ export async function listTickets(
   params: TicketListParams = {},
 ): Promise<TicketListResponse> {
   const response = await apiClient.get<TicketListResponse>("/tickets", {
+    params,
+  });
+  return response.data;
+}
+
+export async function getTicketStats(
+  params: Omit<TicketListParams, "skip" | "limit"> = {},
+): Promise<TicketStats> {
+  const response = await apiClient.get<TicketStats>("/tickets/stats", {
     params,
   });
   return response.data;

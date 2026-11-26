@@ -1,5 +1,7 @@
 """Ticket API endpoints."""
 
+from datetime import datetime
+
 from fastapi import APIRouter, Query
 from fastapi.responses import Response
 
@@ -11,6 +13,7 @@ from app.schemas.ticket import (
     TicketFilters,
     TicketList,
     TicketRead,
+    TicketStats,
     TicketStatus,
     TicketStatusUpdate,
     TicketUpdate,
@@ -33,6 +36,7 @@ def export_tickets(
     status: TicketStatus | None = None,
     priority: Priority | None = None,
     assigned_to: int | None = None,
+    created_after: datetime | None = None,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=EXPORT_DEFAULT_LIMIT, ge=1, le=EXPORT_MAX_LIMIT),
 ) -> Response:
@@ -42,6 +46,7 @@ def export_tickets(
         status=status,
         priority=priority,
         assigned_to=assigned_to,
+        created_after=created_after,
     )
     tickets = service.list_for_export(created_by, filters, skip=skip, limit=limit)
     csv_body = build_tickets_csv(tickets)
@@ -52,6 +57,28 @@ def export_tickets(
     )
 
 
+@router.get("/stats", response_model=TicketStats)
+def ticket_stats(
+    service: TicketSvc,
+    q: str | None = None,
+    status: TicketStatus | None = None,
+    priority: Priority | None = None,
+    assigned_to: int | None = None,
+    created_by: int | None = None,
+    created_after: datetime | None = None,
+) -> TicketStats:
+    """Return aggregated ticket stats for dashboard charts."""
+    filters = TicketFilters(
+        q=q,
+        status=status,
+        priority=priority,
+        assigned_to=assigned_to,
+        created_by=created_by,
+        created_after=created_after,
+    )
+    return service.stats(filters)
+
+
 @router.get("", response_model=TicketList)
 def list_tickets(
     service: TicketSvc,
@@ -60,6 +87,7 @@ def list_tickets(
     priority: Priority | None = None,
     assigned_to: int | None = None,
     created_by: int | None = None,
+    created_after: datetime | None = None,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=50, ge=1, le=100),
 ) -> TicketList:
@@ -70,6 +98,7 @@ def list_tickets(
         priority=priority,
         assigned_to=assigned_to,
         created_by=created_by,
+        created_after=created_after,
     )
     items, total = service.list(filters, skip=skip, limit=limit)
     return TicketList(

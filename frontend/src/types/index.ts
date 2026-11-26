@@ -74,6 +74,33 @@ export interface TicketListParams {
   priority?: Priority;
   assigned_to?: number;
   created_by?: number;
+  /** ISO datetime; tickets with created_at >= this value. */
+  created_after?: string;
   skip?: number;
   limit?: number;
+}
+
+export interface StatusPriorityCount {
+  status: TicketStatus;
+  priority: Priority;
+  count: number;
+}
+
+export interface MonthCount {
+  month: string;
+  count: number;
+}
+
+export interface MonthStatusCount {
+  month: string;
+  status: TicketStatus;
+  count: number;
+}
+
+export interface TicketStats {
+  by_status: Partial<Record<TicketStatus, number>>;
+  by_priority: Partial<Record<Priority, number>>;
+  by_status_priority: StatusPriorityCount[];
+  created_by_month: MonthCount[];
+  status_by_month: MonthStatusCount[];
 }

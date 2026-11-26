@@ -20,6 +20,7 @@ from app.schemas.ticket import (
     Priority,
     TicketCreate,
     TicketFilters,
+    TicketStats,
     TicketStatus,
     TicketUpdate,
 )
@@ -113,6 +114,11 @@ class TicketService:
             skip=skip,
             limit=limit,
         )
+
+    def stats(self, filters: TicketFilters | None = None) -> TicketStats:
+        """Return dashboard aggregations for the optional date/filter window."""
+        raw = self._tickets.aggregate_stats(filters)
+        return TicketStats.model_validate(raw)
 
     def update_fields(self, ticket_id: int, data: TicketUpdate) -> Ticket:
         """Update non-status fields and commit on success."""
