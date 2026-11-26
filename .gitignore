@@ -149,3 +149,6 @@ backend/data/*.db
 
 # Alternate local venv path (sandbox / custom UV_PROJECT_ENVIRONMENT)
 backend/.runtime-venv/
+
+# C2 assessment spec/PDF distributed separately (not in public repo)
+docs/C2-Assesssment/
