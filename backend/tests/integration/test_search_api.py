@@ -1,6 +1,7 @@
 """Ticket search & filter API integration tests (FR-06, AC-030–AC-033)."""
 
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
 
 from app.models.user import User
 from tests.conftest import auth_headers
@@ -132,3 +133,35 @@ def test_filter_by_assignee(
     payload = response.json()
     assert payload["total"] == 1
     assert payload["items"][0]["title"] == "For Bob"
+
+
+def test_filter_by_created_after(
+    db_client: TestClient,
+    db_session: Session,
+    seed_users: list[User],
+) -> None:
+    """created_after keeps recent tickets and excludes older ones."""
+    from datetime import UTC, datetime, timedelta
+
+    from app.models.ticket import Ticket
+
+    alice = seed_users[0]
+    recent = _create_ticket(db_client, alice.id, title="Recent ticket")
+    old = _create_ticket(db_client, alice.id, title="Old ticket")
+
+    old_row = db_session.get(Ticket, old["id"])
+    assert old_row is not None
+    old_row.created_at = datetime.now(UTC) - timedelta(days=400)
+    db_session.commit()
+
+    cutoff = (datetime.now(UTC) - timedelta(days=180)).isoformat()
+    response = db_client.get(
+        "/api/v1/tickets",
+        params={"created_after": cutoff},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    titles = {item["title"] for item in payload["items"]}
+    assert "Recent ticket" in titles
+    assert "Old ticket" not in titles
+    assert recent["id"] in {item["id"] for item in payload["items"]}

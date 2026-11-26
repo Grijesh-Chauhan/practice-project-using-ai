@@ -98,7 +98,7 @@ export function TicketTable({
           onPageSizeChange(Number.parseInt(event.target.value, 10));
           onPageChange(0);
         }}
-        rowsPerPageOptions={[10, 20, 50]}
+        rowsPerPageOptions={[5, 10]}
       />
     </Paper>
   );

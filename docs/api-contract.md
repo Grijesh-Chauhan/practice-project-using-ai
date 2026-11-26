@@ -84,6 +84,7 @@ List tickets with optional filters.
 | `priority` | Priority | Filter by priority |
 | `assigned_to` | int | Filter by assignee user ID |
 | `created_by` | int | Filter by creator user ID |
+| `created_after` | datetime (ISO 8601) | Only tickets with `created_at` ≥ this value |
 | `skip` | int | Pagination offset (default 0) |
 | `limit` | int | Page size (default 50, max 100) |
 
@@ -187,7 +188,7 @@ Export tickets created by current user (`X-User-Id`) as CSV.
 
 **Headers:** `X-User-Id` required
 
-**Query params:** Optional list filters (`q`, `status`, `priority`, `assigned_to`, `skip`, `limit`) apply **within** `created_by = X-User-Id`. Do not pass `created_by` (server overrides).
+**Query params:** Optional list filters (`q`, `status`, `priority`, `assigned_to`, `created_after`, `skip`, `limit`) apply **within** `created_by = X-User-Id`. Do not pass `created_by` (server overrides).
 
 **Response 200**
 - `Content-Type: text/csv`
@@ -196,6 +197,24 @@ Export tickets created by current user (`X-User-Id`) as CSV.
 **CSV columns:** id, title, description, priority, status, assigned_to, created_by, created_at, updated_at
 
 **Response 400** — Missing/invalid `X-User-Id`
+
+### `GET /tickets/stats`
+Dashboard aggregations for charts (respects the same list filters, including `created_after`).
+
+**Response 200**
+```json
+{
+  "by_status": { "Open": 12, "Closed": 40 },
+  "by_priority": { "low": 10, "medium": 30, "high": 12 },
+  "by_status_priority": [
+    { "status": "Open", "priority": "high", "count": 3 }
+  ],
+  "created_by_month": [{ "month": "2025-01", "count": 18 }],
+  "status_by_month": [
+    { "month": "2025-01", "status": "Closed", "count": 9 }
+  ]
+}
+```
 
 ---
 
@@ -259,3 +278,4 @@ Allow `http://localhost:5173` with credentials if needed. Allow header `X-User-I
 | 2026-07-24 | Initial contract |
 | 2026-07-24 | Design review: lock 409; validation table; export/route notes; X-User-Id errors |
 | 2026-07-27 | Implementation verified: all endpoints live, incl. `GET /tickets/export` (CSV) matching this contract |
+| 2026-07-28 | Added optional `created_after` query filter on list/export for dashboard date-range presets |

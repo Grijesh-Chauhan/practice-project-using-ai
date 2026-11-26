@@ -91,6 +91,7 @@ class TicketFilters(BaseModel):
     priority: Priority | None = None
     assigned_to: int | None = None
     created_by: int | None = None
+    created_after: datetime | None = None
 
 
 class TicketRead(BaseModel):
@@ -120,3 +121,36 @@ class TicketList(BaseModel):
 
     items: list[TicketRead]
     total: int
+
+
+class StatusPriorityCount(BaseModel):
+    """Count of tickets for one status × priority cell."""
+
+    status: TicketStatus
+    priority: Priority
+    count: int
+
+
+class MonthCount(BaseModel):
+    """Tickets created in a calendar month (YYYY-MM)."""
+
+    month: str
+    count: int
+
+
+class MonthStatusCount(BaseModel):
+    """Tickets created in a month that currently have a given status."""
+
+    month: str
+    status: TicketStatus
+    count: int
+
+
+class TicketStats(BaseModel):
+    """Aggregated ticket analytics for dashboard charts."""
+
+    by_status: dict[str, int]
+    by_priority: dict[str, int]
+    by_status_priority: list[StatusPriorityCount]
+    created_by_month: list[MonthCount]
+    status_by_month: list[MonthStatusCount]

@@ -9,6 +9,10 @@ export const ticketKeys = {
   list: (params: TicketListParams) => [...ticketKeys.lists(), params] as const,
   details: () => [...ticketKeys.all, "detail"] as const,
   detail: (id: number) => [...ticketKeys.details(), id] as const,
+  statusCounts: (createdAfter?: string) =>
+    [...ticketKeys.all, "status-counts", createdAfter ?? "all"] as const,
+  stats: (params: Omit<TicketListParams, "skip" | "limit">) =>
+    [...ticketKeys.all, "stats", params] as const,
 };
 
 export function useTickets(params: TicketListParams) {

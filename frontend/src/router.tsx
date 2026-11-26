@@ -1,7 +1,8 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
 import { AppLayout } from "./components/layout/AppLayout";
 import { CreateTicketPage } from "./pages/CreateTicketPage";
+import { DashboardPage } from "./pages/DashboardPage";
 import { EditTicketPage } from "./pages/EditTicketPage";
 import { NotFoundPage } from "./pages/NotFoundPage";
 import { TicketDetailPage } from "./pages/TicketDetailPage";
@@ -11,7 +12,7 @@ export function AppRouter() {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-        <Route index element={<Navigate to="/tickets" replace />} />
+        <Route index element={<DashboardPage />} />
         <Route path="tickets" element={<TicketListPage />} />
         <Route path="tickets/new" element={<CreateTicketPage />} />
         <Route path="tickets/:id" element={<TicketDetailPage />} />

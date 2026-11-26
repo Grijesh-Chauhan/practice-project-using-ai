@@ -7,13 +7,15 @@ import TextField from "@mui/material/TextField";
 import type { SelectChangeEvent } from "@mui/material/Select";
 
 import type { Priority, TicketStatus, User } from "../../types";
-import { PRIORITIES, TICKET_STATUSES } from "../../utils/constants";
+import { PRIORITIES, type DateRangePreset } from "../../utils/constants";
+import { DateRangeSelect } from "./DateRangeSelect";
 
 export interface SearchFiltersValue {
   q: string;
   status: TicketStatus | "";
   priority: Priority | "";
   assigned_to: number | "";
+  dateRange: DateRangePreset;
 }
 
 interface SearchFiltersProps {
@@ -22,14 +24,8 @@ interface SearchFiltersProps {
   onChange: (next: SearchFiltersValue) => void;
 }
 
+/** Search + priority/assignee/date filters. Status is handled by StatusFilterTabs. */
 export function SearchFilters({ value, users, onChange }: SearchFiltersProps) {
-  const handleStatusChange = (event: SelectChangeEvent) => {
-    onChange({
-      ...value,
-      status: event.target.value as TicketStatus | "",
-    });
-  };
-
   const handlePriorityChange = (event: SelectChangeEvent) => {
     onChange({
       ...value,
@@ -49,7 +45,7 @@ export function SearchFilters({ value, users, onChange }: SearchFiltersProps) {
     <Stack
       direction={{ xs: "column", md: "row" }}
       spacing={2}
-      sx={{ mb: 3 }}
+      sx={{ mb: 2 }}
       useFlexGap
     >
       <TextField
@@ -61,22 +57,13 @@ export function SearchFilters({ value, users, onChange }: SearchFiltersProps) {
         size="small"
         inputProps={{ "aria-label": "Search tickets" }}
       />
-      <FormControl size="small" sx={{ minWidth: 160 }}>
-        <InputLabel id="filter-status-label">Status</InputLabel>
-        <Select
-          labelId="filter-status-label"
-          label="Status"
-          value={value.status}
-          onChange={handleStatusChange}
-        >
-          <MenuItem value="">All</MenuItem>
-          {TICKET_STATUSES.map((status) => (
-            <MenuItem key={status} value={status}>
-              {status}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
+      <DateRangeSelect
+        value={value.dateRange}
+        onChange={(dateRange) => onChange({ ...value, dateRange })}
+        idPrefix="list-date-range"
+        fullWidth={false}
+        sx={{ minWidth: 180 }}
+      />
       <FormControl size="small" sx={{ minWidth: 140 }}>
         <InputLabel id="filter-priority-label">Priority</InputLabel>
         <Select

@@ -55,7 +55,7 @@ cd backend
 uv sync --group dev
 cp .env.example .env
 uv run alembic upgrade head            # create the SQLite schema
-uv run python ../scripts/seed_db.py    # seed 3 demo users + 5 sample tickets
+uv run python ../scripts/seed_db.py    # seed 3 demo users + ~1000 synthetic tickets
 uv run uvicorn app.main:app --reload
 ```
 
@@ -63,7 +63,12 @@ uv run uvicorn app.main:app --reload
 - Health: http://localhost:8000/health
 
 > Data persists in `backend/data/tickets.db`. Re-running the seed script is
-> idempotent (users upsert by email; sample tickets only load when empty).
+> idempotent (users upsert by email; tickets only load when the table is empty).
+> To replace ticket data with a fresh ~1000-row synthetic set spanning ~5 years:
+>
+> ```bash
+> uv run python ../scripts/seed_db.py --force
+> ```
 
 Useful UV commands:
 

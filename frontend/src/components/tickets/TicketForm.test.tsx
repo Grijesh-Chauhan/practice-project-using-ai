@@ -20,6 +20,14 @@ const users: User[] = [
   },
 ];
 
+function titleField() {
+  return screen.getByRole("textbox", { name: /^title$/i });
+}
+
+function descriptionField() {
+  return screen.getByRole("textbox", { name: /^description$/i });
+}
+
 describe("TicketForm", () => {
   it("test_ticket_form_shows_validation_errors_for_empty_required_fields", async () => {
     const user = userEvent.setup();
@@ -31,6 +39,7 @@ describe("TicketForm", () => {
         submitLabel="Create Ticket"
         onSubmit={onSubmit}
         onCancel={vi.fn()}
+        enableVoiceTyping={false}
         defaultValues={{
           title: "",
           description: "",
@@ -40,8 +49,8 @@ describe("TicketForm", () => {
       />,
     );
 
-    await user.clear(screen.getByLabelText(/title/i));
-    await user.clear(screen.getByLabelText(/description/i));
+    await user.clear(titleField());
+    await user.clear(descriptionField());
     await user.click(screen.getByRole("button", { name: /create ticket/i }));
 
     expect(await screen.findByText(/title is required/i)).toBeInTheDocument();
@@ -59,11 +68,12 @@ describe("TicketForm", () => {
         submitLabel="Create Ticket"
         onSubmit={onSubmit}
         onCancel={vi.fn()}
+        enableVoiceTyping={false}
       />,
     );
 
-    await user.type(screen.getByLabelText(/title/i), "Login issue");
-    await user.type(screen.getByLabelText(/description/i), "Cannot reset password");
+    await user.type(titleField(), "Login issue");
+    await user.type(descriptionField(), "Cannot reset password");
     await user.click(screen.getByRole("button", { name: /create ticket/i }));
 
     await waitFor(() => {
@@ -74,5 +84,22 @@ describe("TicketForm", () => {
         assigned_to: null,
       });
     });
+  });
+
+  it("shows a single voice fill control when enabled", () => {
+    render(
+      <TicketForm
+        users={users}
+        submitLabel="Create Ticket"
+        onSubmit={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText(/speak the issue, say the priority/i)).toBeInTheDocument();
+    // jsdom has no SpeechRecognition → unavailable control
+    expect(
+      screen.getByRole("button", { name: /voice fill unavailable/i }),
+    ).toBeInTheDocument();
   });
 });

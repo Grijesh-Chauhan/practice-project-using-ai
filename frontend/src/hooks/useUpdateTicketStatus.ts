@@ -14,6 +14,12 @@ export function useUpdateTicketStatus(ticketId: number) {
       void queryClient.invalidateQueries({
         queryKey: ticketKeys.detail(ticketId),
       });
+      void queryClient.invalidateQueries({
+        queryKey: [...ticketKeys.all, "status-counts"],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: [...ticketKeys.all, "stats"],
+      });
     },
   });
 }

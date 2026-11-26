@@ -8,12 +8,16 @@ import MenuItem from "@mui/material/MenuItem";
 import Select from "@mui/material/Select";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import Typography from "@mui/material/Typography";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { ticketFormSchema, type TicketFormValues } from "../../schemas/ticketForm";
 import type { User } from "../../types";
 import { PRIORITIES } from "../../utils/constants";
+import type { ParsedVoiceTicket } from "../../utils/parseVoiceTicket";
+import { VoiceTicketFillButton } from "../common/VoiceTicketFillButton";
 
 interface TicketFormProps {
   users: User[];
@@ -23,6 +27,8 @@ interface TicketFormProps {
   onCancel: () => void;
   apiError?: string | null;
   isSubmitting?: boolean;
+  /** Show the single voice-fill control (default true). */
+  enableVoiceTyping?: boolean;
 }
 
 const emptyDefaults: TicketFormValues = {
@@ -40,16 +46,48 @@ export function TicketForm({
   onCancel,
   apiError,
   isSubmitting = false,
+  enableVoiceTyping = true,
 }: TicketFormProps) {
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<TicketFormValues>({
     resolver: zodResolver(ticketFormSchema),
     defaultValues: { ...emptyDefaults, ...defaultValues },
   });
+
+  const [isListening, setIsListening] = useState(false);
+  const [interim, setInterim] = useState("");
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [voiceNotes, setVoiceNotes] = useState<string[] | null>(null);
+
+  const applyParsedVoice = useCallback(
+    (parsed: ParsedVoiceTicket) => {
+      if (parsed.title) {
+        setValue("title", parsed.title, { shouldDirty: true, shouldValidate: true });
+      }
+      if (parsed.description) {
+        setValue("description", parsed.description, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      }
+      setValue("priority", parsed.priority, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      setValue("assigned_to", parsed.assigned_to, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      setVoiceNotes(parsed.notes);
+      setInterim("");
+    },
+    [setValue],
+  );
 
   return (
     <Box
@@ -64,12 +102,57 @@ export function TicketForm({
     >
       <Stack spacing={2.5}>
         {apiError ? <Alert severity="error">{apiError}</Alert> : null}
+        {voiceError ? <Alert severity="warning">{voiceError}</Alert> : null}
+
+        {enableVoiceTyping ? (
+          <Stack spacing={1}>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              spacing={1.5}
+              alignItems={{ xs: "stretch", sm: "center" }}
+              justifyContent="space-between"
+            >
+              <Typography variant="body2" color="text.secondary">
+                Speak the issue, say the priority (low / medium / high), and name an
+                assignee. We generate the title and fill the form — review before
+                creating.
+              </Typography>
+              <VoiceTicketFillButton
+                users={users}
+                disabled={isSubmitting}
+                onParsed={applyParsedVoice}
+                onListeningChange={setIsListening}
+                onInterimChange={setInterim}
+                onError={setVoiceError}
+              />
+            </Stack>
+            {isListening ? (
+              <Alert severity="info">
+                Listening… example: &ldquo;Cannot reset password on billing. Priority
+                high. Assign to Alice.&rdquo;
+                {interim ? (
+                  <Typography component="span" display="block" sx={{ mt: 1 }}>
+                    Hearing: {interim}
+                  </Typography>
+                ) : null}
+              </Alert>
+            ) : null}
+            {voiceNotes && voiceNotes.length > 0 ? (
+              <Alert severity="success" onClose={() => setVoiceNotes(null)}>
+                {voiceNotes.join(" ")}
+              </Alert>
+            ) : null}
+          </Stack>
+        ) : null}
 
         <TextField
           label="Title"
           {...register("title")}
           error={Boolean(errors.title)}
-          helperText={errors.title?.message}
+          helperText={
+            errors.title?.message ??
+            "Auto-generated from voice when you use Fill with voice"
+          }
           fullWidth
           required
           inputProps={{ maxLength: 255 }}
